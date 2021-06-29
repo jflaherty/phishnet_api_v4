@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "phishnet_api_v4"
+version = "0.1.0"
+description = "Python3 client to interface with v4 of the api.phish.net REST endpoints."
+authors = ["Jay Flaherty <jayflaherty@gmail.com>"]
+license = "GPLv3"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.25.1"
+python-dotenv = "^0.18.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+requests-mock = "^1.9.3"
+autopep8 = "^1.5.7"
+pydoc-markdown = "^3.13.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
