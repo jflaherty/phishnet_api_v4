@@ -24,7 +24,7 @@ def test_version():
 
 class TestMockPhishNetAPI:
     '''
-    These tests are live integration tests that will be run everytime pytest is run.
+    These tests are mock tests that will be run everytime pytest is run.
     They use request_mock to mock the REST API calls.
     '''
 
@@ -249,6 +249,14 @@ class TestMockPhishNetAPI:
         assert get_setlists_response['response']['count'] == 1
         assert len(get_setlists_response['response']['data']) == 1
         assert get_setlists_response['response']['data'][0]['showid'] == 1252698446
+        assert len(get_setlists_response['response']
+                   ['data'][0]['setlistdata']) == 18
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['songid'] == 404
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['song'] == "NICU"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['slug'] == "nicu"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['set'] == "1"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['18']['songid'] == 235
+        assert get_setlists_response['response']['data'][0]['setlistdata']['18']['set'] == "e"
 
     def test_get_latest_setlist(self, requests_mock):
         api = PhishNetAPI('apikey123456789test1')
@@ -365,12 +373,12 @@ class TestMockPhishNetAPI:
         assert venue_response['response']['data']['venueid'] == 1
 
 
-# @pytest.mark.integration
+@pytest.mark.integration
 class TestPhishNetAPI:
     '''
     These tests are live integration tests that require a valid apikey, appid, private_salt, and a 
     valid phish.net uid that has given authorization to run authorized api calls to api.phish.net
-    for you application associated with the apikey. These are extracted from either OS environment 
+    for your application associated with the apikey. These are extracted from either OS environment 
     variables (APIKEY, APPID, PRIVATE_SALT, UID) or via a .env file at the root of this project 
     (see .env.SAMPLE for an example.) To run these test for this class pass --integration to pytest.
     '''
@@ -485,6 +493,7 @@ class TestPhishNetAPI:
         assert jamchart_response['response']['count'] == len(
             jamchart_response['response']['data'])
 
+    @pytest.mark.xfail(reason="v4 returns invalid json response")
     def test_get_all_people(self):
         api = PhishNetAPI()
         people_response = api.get_all_people()
@@ -493,6 +502,7 @@ class TestPhishNetAPI:
         assert people_response['response']['count'] == len(
             people_response['response']['data'])
 
+    @pytest.mark.xfail(reason="v4 returns invalid json response")
     def test_get_all_people_types(self):
         api = PhishNetAPI()
         people_types_response = api.get_all_people_types()
@@ -502,6 +512,7 @@ class TestPhishNetAPI:
             people_types_response['response']['data'].keys())
         assert people_types_response['response']['data']["1"] == "The Band"
 
+    @pytest.mark.xfail(reason="v4 returns invalid json response")
     def test_get_appearances(self):
         api = PhishNetAPI()
         appearances_response = api.get_appearances(79)
@@ -547,7 +558,6 @@ class TestPhishNetAPI:
         assert len(setlist_response['response']['data']) == 1
         assert setlist_response['response']['data'][0]['showid'] == 1252698446
         assert setlist_response['response']['data'][0]['showdate'] == '1997-12-29'
-        assert setlist_response['response']['data'][0]['rating'] == '4.5907'
         assert setlist_response['response']['data'][0]['location'] == 'New York, NY, USA'
 
         get_setlists_response = api.get_setlist(showdate='1997-12-29')
@@ -557,8 +567,15 @@ class TestPhishNetAPI:
         assert len(get_setlists_response['response']['data']) == 1
         assert get_setlists_response['response']['data'][0]['showid'] == 1252698446
         assert setlist_response['response']['data'][0]['showdate'] == '1997-12-29'
-        assert setlist_response['response']['data'][0]['rating'] == '4.5907'
         assert setlist_response['response']['data'][0]['location'] == 'New York, NY, USA'
+        assert len(get_setlists_response['response']
+                   ['data'][0]['setlistdata']) == 18
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['songid'] == 404
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['song'] == "NICU"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['slug'] == "nicu"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['1']['set'] == "1"
+        assert get_setlists_response['response']['data'][0]['setlistdata']['18']['songid'] == 235
+        assert get_setlists_response['response']['data'][0]['setlistdata']['18']['set'] == "e"
 
     def test_get_recent_setlists(self):
         api = PhishNetAPI()
@@ -602,12 +619,13 @@ class TestPhishNetAPI:
 
     def test_query_shows(self):
         api = PhishNetAPI()
-        query_shows_response = api.query_shows(month=3, day=19)
+        query_shows_response = api.query_shows(
+            month=3, day=19, showyear_lt=1998)
 
         assert query_shows_response['error_code'] == 0
-        assert query_shows_response['response']['count'] == 21
-        assert len(query_shows_response['response']['data']) == 21
-        assert query_shows_response['response']['data'][0]['showid'] == 1252697421
+        assert query_shows_response['response']['count'] == 3
+        assert len(query_shows_response['response']['data']) == 3
+        assert query_shows_response['response']['data'][0]['showid'] == 1251220940
 
         with pytest.raises(ParamValidationError):
             api.query_shows(year=1982)
